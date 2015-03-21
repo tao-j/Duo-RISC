@@ -3,18 +3,22 @@ import Chisel._
 class CoreIO() extends Bundle
 {
   val mem = new MemoryIO().flip()
+  val debug = UInt(OUTPUT, 32)
   val reset = Bool(INPUT)
 }
 
 class Core() extends Module {
   val io = new CoreIO()
 
+  io.mem.reset := io.reset
+  io.debug := UInt("h_aabbccdd")
+  unless(io.reset) { io.debug := io.mem.debug }
   val s_if :: s_id :: s_exe :: s_mem :: s_wb :: Nil = Enum(UInt(width = 3), 5)
 
   // registers
   val pc = Reg(init = UInt(0, 32))
   // NOTE:
-  val pc_start = UInt("h3000")
+  val pc_start = UInt("h0000")
   val ir = Reg(init = UInt(0, 32))
   val c = Reg(init = UInt(0, 32)) // pseudo ALU output
   val d = Reg(init = UInt(0, 32)) // data from datapath
@@ -136,6 +140,7 @@ class Core() extends Module {
 
   // register file
   val regfile = Mem(UInt(width = 32), 32)
+
   rs_v := regfile(rs)
   rt_v := regfile(rt)
   when(io.reset === Bool(x = true)) {

@@ -8,21 +8,22 @@ class Top extends Module {
   val core = Module(new Core)
   val memory = Module(new Memory)
 
+
   core.io.reset <> io.reset
   core.io.mem <> memory.io
 }
 
 class TopTests(c: Top) extends Tester(c) {
-  val v1 = rnd.nextInt(1 << 8)
-  val v2 = rnd.nextInt(1 << 8)
-  val v3 = rnd.nextInt(1 << 8)
-  val v4 = rnd.nextInt(1 << 8)
 
-  pokeAt(c.memory.dataSeg, (v1 + v2 + v3 + v4) % (1 << 31), 0)
-  pokeAt(c.memory.dataSeg, v1, 0x80 >> 2)
-  pokeAt(c.memory.dataSeg, v2, 0x84 >> 2)
-  pokeAt(c.memory.dataSeg, v3, 0x88 >> 2)
-  pokeAt(c.memory.dataSeg, v4, 0x8c >> 2)
+//  val v1 = rnd.nextInt(1 << 8)
+//  val v2 = rnd.nextInt(1 << 8)
+//  val v3 = rnd.nextInt(1 << 8)
+//  val v4 = rnd.nextInt(1 << 8)
+//  pokeAt(c.memory.textSeg, (v1 + v2 + v3 + v4) % (1 << 31), 0)
+//  pokeAt(c.memory.textSeg, v1, 0x80 >> 2)
+//  pokeAt(c.memory.textSeg, v2, 0x84 >> 2)
+//  pokeAt(c.memory.textSeg, v3, 0x88 >> 2)
+//  pokeAt(c.memory.textSeg, v4, 0x8c >> 2)
 
   poke(c.io.reset, 1)
   step (1)
@@ -31,8 +32,9 @@ class TopTests(c: Top) extends Tester(c) {
   step (300)
   //TODO: val prv_pc = peek(c.core.pc)
 
-  peekAt(c.memory.dataSeg, 0x90 >> 2)
-  //printf("%0x\n", (v1 + v2 + v3 + v4) % (1 << 31))
+  peekAt(c.memory.textSeg, 0x90 >> 2)
+  peek(c.memory.io.debug)
+  //see
 
   def see: Unit = {
     //peek()

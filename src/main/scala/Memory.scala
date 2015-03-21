@@ -8,15 +8,14 @@ class MemoryIO() extends Bundle
   val w_m_addr  = UInt(OUTPUT, 32).flip()  // write memory address
   val d_t_mem = UInt(OUTPUT, 32).flip()  // data to memory
   val w_d_mem = Bool(OUTPUT).flip()  // write data memory
+  val debug = UInt(OUTPUT, 32)
+  val reset = Bool(INPUT)
 }
 
-class Memory(resetSignal: Bool = null) extends Module(_reset = resetSignal)
-{
+class Memory() extends Module {
   val io = new MemoryIO()
 
-  val textSeg = Mem(UInt(width = 32), 64)
-  val dataSeg = Mem(UInt(width = 32), 64)
-
+  val textSeg = Mem(UInt(width = 32), 64, false)
   /*
   test program 1 .text at 0x00003000 .data at 0x00000000
 0  : 3c010000; % (00) main:  lui  r1, 0          # address of data[0]     %
@@ -85,6 +84,10 @@ F  : 01463824; % (3c)        and  r7, r10, r6    # and: 0000ffff          %
     UInt("h14a0fffb"),
     UInt("h00081000"),
     UInt("h03e00008"),
+    UInt("h00000bee"),
+    UInt("h00000bed"),
+    UInt("h00000add"),
+    UInt("h00000fee"),
     UInt("h_dead_beef")
   )
   /*
@@ -133,21 +136,23 @@ F  : 01463824; % (3c)        and  r7, r10, r6    # and: 0000ffff          %
   )
 
   val prog = prog1
-  for (i <- 0 until prog.length) {
-    textSeg(i) := prog(i)
+
+  when (io.reset) {
+    for (i <- 0 until prog.length) {
+      textSeg(i) := prog(i)
+    }
   }
 
   val dout = UInt()
+  dout := UInt("h_dead_beef")
   val r_word_addr = io.r_m_addr >> UInt(2)
   val w_word_addr = io.w_m_addr >> UInt(2)
 
-  dout := UInt("h_beefabee")
-  when (io.r_m_addr >= UInt("h00003000", 32)) {
-    dout := textSeg(r_word_addr)
-  }
-    .otherwise {
-    dout := dataSeg(r_word_addr) }
-  when (io.w_d_mem) { dataSeg(w_word_addr) := io.d_t_mem }
+
+  when (io.w_d_mem) { textSeg(w_word_addr) := io.d_t_mem }
+  .otherwise {dout := textSeg(r_word_addr) }
 
   io.d_f_mem := dout
+
+  io.debug := textSeg(0x90 >> 2)
 }
