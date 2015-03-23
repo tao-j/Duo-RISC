@@ -2,14 +2,12 @@ import Chisel._
 
 class Top extends Module {
   val io = new Bundle {
-    val reset = Bool(INPUT)
+    val reset = Bool(OUTPUT)
   }
 
   val core = Module(new Core)
   val memory = Module(new Memory)
 
-
-  core.io.reset <> io.reset
   core.io.mem <> memory.io
 }
 
@@ -25,15 +23,14 @@ class TopTests(c: Top) extends Tester(c) {
 //  pokeAt(c.memory.textSeg, v3, 0x88 >> 2)
 //  pokeAt(c.memory.textSeg, v4, 0x8c >> 2)
 
-  poke(c.io.reset, 1)
-  step (1)
 
-  poke(c.io.reset, 0)
+  reset(1)
   step (300)
   //TODO: val prv_pc = peek(c.core.pc)
 
   peekAt(c.memory.textSeg, 0x90 >> 2)
   peek(c.memory.io.debug)
+
   //see
 
   def see: Unit = {

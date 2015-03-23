@@ -9,7 +9,6 @@ class MemoryIO() extends Bundle
   val d_t_mem = UInt(OUTPUT, 32).flip()  // data to memory
   val w_d_mem = Bool(OUTPUT).flip()  // write data memory
   val debug = UInt(OUTPUT, 32)
-  val reset = Bool(INPUT)
 }
 
 class Memory() extends Module {
@@ -137,7 +136,7 @@ F  : 01463824; % (3c)        and  r7, r10, r6    # and: 0000ffff          %
 
   val prog = prog1
 
-  when (io.reset) {
+  when (this.reset) {
     for (i <- 0 until prog.length) {
       textSeg(i) := prog(i)
     }

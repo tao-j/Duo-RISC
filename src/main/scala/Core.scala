@@ -4,15 +4,11 @@ class CoreIO() extends Bundle
 {
   val mem = new MemoryIO().flip()
   val debug = UInt(OUTPUT, 32)
-  val reset = Bool(INPUT)
 }
 
 class Core() extends Module {
   val io = new CoreIO()
 
-  io.mem.reset := io.reset
-  io.debug := UInt("h_aabbccdd")
-  unless(io.reset) { io.debug := io.mem.debug }
   val s_if :: s_id :: s_exe :: s_mem :: s_wb :: Nil = Enum(UInt(width = 3), 5)
 
   // registers
@@ -113,42 +109,24 @@ class Core() extends Module {
   io.mem.r_m_addr := r_m_addr
   io.mem.w_m_addr := w_m_addr
 
-  when(io.reset === Bool(true)) {
-    pc := pc_start
-  }
-    .elsewhen(wpc) {
+  when(wpc) {
     pc := next_pc
   }
-
-  when(io.reset === Bool(true)) {
-    ir := UInt(0)
-  }
-    .elsewhen(wir) {
+  when(wir) {
     ir := io.mem.d_f_mem
   }
 
-  when(io.reset === Bool(true)) {
-    c := UInt(0)
-    d := UInt(0)
-    state := s_if
-  }
-    .otherwise {
-    c := c_in
-    d := io.mem.d_f_mem
-    state := next_state
-  }
+
+  c := c_in
+  d := io.mem.d_f_mem
+  state := next_state
 
   // register file
   val regfile = Mem(UInt(width = 32), 32)
 
   rs_v := regfile(rs)
   rt_v := regfile(rt)
-  when(io.reset === Bool(x = true)) {
-    for (i <- 0 until 32) {
-      regfile(i) := UInt(0)
-    }
-  }
-    .elsewhen(wreg && (dest_rn != UInt(0))) {
+  when(wreg && (dest_rn != UInt(0))) {
     regfile(dest_rn) := data_2_rf
   }
 
@@ -317,9 +295,16 @@ class Core() extends Module {
       }
     } //--------------------------------------------- END
 
-  val ticks = Reg(init = UInt(0, 32))
-  unless (io.reset) {
-    ticks := ticks + UInt(1)
+  when(this.reset) {
+    pc := pc_start
+    ir := UInt(0)
+    c := UInt(0)
+    d := UInt(0)
+    state := s_if
+    for (i <- 0 until 32) {
+      regfile(i) := UInt(0)
+    }
   }
 
+  io.debug := io.mem.debug
 }
