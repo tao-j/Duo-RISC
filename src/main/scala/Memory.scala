@@ -14,7 +14,7 @@ class MemoryIO() extends Bundle
 class Memory() extends Module {
   val io = new MemoryIO()
 
-  val textSeg = Mem(UInt(width = 32), 64, false)
+  val textSeg = Mem(UInt(width = 32), 38, false)
   /*
   test program 1 .text at 0x00003000 .data at 0x00000000
 0  : 3c010000; % (00) main:  lui  r1, 0          # address of data[0]     %

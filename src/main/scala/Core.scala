@@ -3,7 +3,6 @@ import Chisel._
 class CoreIO() extends Bundle
 {
   val mem = new MemoryIO().flip()
-  val debug = UInt(OUTPUT, 32)
 }
 
 class Core() extends Module {
@@ -306,5 +305,4 @@ class Core() extends Module {
     }
   }
 
-  io.debug := io.mem.debug
 }

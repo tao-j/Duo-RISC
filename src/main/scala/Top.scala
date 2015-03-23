@@ -2,13 +2,17 @@ import Chisel._
 
 class Top extends Module {
   val io = new Bundle {
-    val reset = Bool(OUTPUT)
+    val peripheral = new PeripheralIO
   }
 
   val core = Module(new Core)
   val memory = Module(new Memory)
 
   core.io.mem <> memory.io
+
+  val peripheral = Module(new Peripheral)
+  io.peripheral <> peripheral.io.out
+  peripheral.io.in.x :=  memory.io.debug(15,0)
 }
 
 class TopTests(c: Top) extends Tester(c) {
@@ -30,6 +34,7 @@ class TopTests(c: Top) extends Tester(c) {
 
   peekAt(c.memory.textSeg, 0x90 >> 2)
   peek(c.memory.io.debug)
+  peek(c.peripheral.io.out.segment_display_sub_io.segment)
 
   //see
 
