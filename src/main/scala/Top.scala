@@ -11,8 +11,15 @@ class Top extends Module {
   core.io.mem <> memory.io
 
   val peripheral = Module(new Peripheral)
-  io.peripheral <> peripheral.io.out
-  peripheral.io.in.x :=  memory.io.debug(15,0)
+  io.peripheral <> peripheral.io.pin_hub
+  peripheral.io.raw_hub.segment_display_raw :=  memory.io.debug(15,0)
+
+
+  peripheral.io.raw_hub.analog_monitor_raw.color :=
+    Mux (peripheral.io.raw_hub.analog_monitor_raw.video_enable,
+      peripheral.io.raw_hub.analog_monitor_raw.x_coordinate +
+        peripheral.io.raw_hub.analog_monitor_raw.y_coordinate,
+      UInt(0))
 }
 
 class TopTests(c: Top) extends Tester(c) {
@@ -29,12 +36,12 @@ class TopTests(c: Top) extends Tester(c) {
 
 
   reset(1)
-  step (300)
+  step (200000)
   //TODO: val prv_pc = peek(c.core.pc)
 
   peekAt(c.memory.textSeg, 0x90 >> 2)
   peek(c.memory.io.debug)
-  peek(c.peripheral.io.out.segment_display_sub_io.segment)
+  peek(c.peripheral.io.pin_hub.segment_display_pin.segment)
 
   //see
 
