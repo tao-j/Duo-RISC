@@ -43,9 +43,8 @@ class TopTests(c: Top) extends Tester(c) {
 
 object Top {
   def main(args: Array[String]): Unit = {
-    val tutArgs = args.slice(1, args.length)
     args.foreach(arg => println(arg))
-    chiselMainTest(tutArgs, () => Module(new Top())) {
+    chiselMainTest(args, () => Module(new Top())) {
       c => new TopTests(c) }
   }
 }
